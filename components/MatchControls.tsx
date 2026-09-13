@@ -1,6 +1,9 @@
 "use client";
-
-import type { CSSProperties, Dispatch, SetStateAction } from "react";
+import type {
+  CSSProperties,
+  Dispatch,
+  SetStateAction,
+} from "react";
 import JoinMatchPrompt from "./JoinMatchPrompt";
 
 type Match = {
@@ -35,58 +38,56 @@ type MatchControlsProps = {
   btn: CSSProperties;
   bounty: number;
   mode: "pvp" | "solo" | null;
-  setMode: (mode: "pvp" | "solo" | null) => void;
+  setModeAction: (mode: "pvp" | "solo" | null) => void;
   showModeSelect: boolean;
   betAmount: number;
-  setBetAmount: (amount: number) => void;
+  setBetAmountAction: (amount: number) => void;
   matchTitle: string;
-  setMatchTitle: (title: string) => void;
+  setMatchTitleAction: (title: string) => void;
   sessionUserId: string;
-  showPopup: (message: string) => void;
-  setBounty: Dispatch<SetStateAction<number>>;
+  showPopupAction: (message: string) => void;
   currentMatch: Match | null;
-  setCurrentMatch: (match: Match | null) => void;
+  setCurrentMatchAction: (match: Match | null) => void;
   matchId: string;
-  setMatchId: (id: string) => void;
-  setDidCreateMatch: (value: boolean) => void;
+  setMatchIdAction: (id: string) => void;
+  setDidCreateMatchAction: (value: boolean) => void;
   pendingJoin: PendingJoin | null;
-  setPendingJoin: (join: PendingJoin | null) => void;
+  setPendingJoinAction: (join: PendingJoin | null) => void;
   previewCost: number;
   previewCurrent: number;
   previewAfter: number;
-  loadUser: (userId: string) => Promise<void>;
-  onJoined: (match: Match) => void;
-  onMatchFinished: () => void;
-  onMatchCancelled: () => void;
-  setLeaderboard: Dispatch<SetStateAction<any[]>>;
+  loadUserAction: (userId: string) => Promise<void>;
+  onJoinedAction: (match: Match) => void;
+  onMatchFinishedAction: () => void;
+  setLeaderboardAction: Dispatch<SetStateAction<any[]>>;
 };
 
 export default function MatchControls({
   btn,
   bounty,
   mode,
-  setMode,
+  setModeAction: setMode,
   showModeSelect,
   betAmount,
-  setBetAmount,
+  setBetAmountAction: setBetAmount,
   matchTitle,
-  setMatchTitle,
+  setMatchTitleAction: setMatchTitle,
   sessionUserId,
-  showPopup,
+  showPopupAction: showPopup,
   currentMatch,
-  setCurrentMatch,
+  setCurrentMatchAction: setCurrentMatch,
   matchId,
-  setMatchId,
-  setDidCreateMatch,
+  setMatchIdAction: setMatchId,
+  setDidCreateMatchAction: setDidCreateMatch,
   pendingJoin,
-  setPendingJoin,
+  setPendingJoinAction: setPendingJoin,
   previewCost,
   previewCurrent,
   previewAfter,
-  loadUser,
-  onJoined,
-  onMatchFinished,
-  setLeaderboard
+  loadUserAction: loadUser,
+  onJoinedAction: onJoined,
+  onMatchFinishedAction: onMatchFinished,
+  setLeaderboardAction: setLeaderboard,
 }: MatchControlsProps) {
   const createMatch = async () => {
     if (mode === "pvp" && bounty < betAmount) {

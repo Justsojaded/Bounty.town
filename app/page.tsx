@@ -775,42 +775,36 @@ export default function Home() {
         btn={btn}
         bounty={bounty ?? 0}
         mode={mode}
-        setMode={setMode}
+        setModeAction={setMode}
         showModeSelect={showModeSelect}
         betAmount={betAmount}
-        setBetAmount={setBetAmount}
+        setBetAmountAction={setBetAmount}
         matchTitle={matchTitle}
-        setMatchTitle={setMatchTitle}
+        setMatchTitleAction={setMatchTitle}
         sessionUserId={session.user.id}
-        showPopup={showPopup}
-        setBounty={setBounty}
+        showPopupAction={showPopup}
         currentMatch={currentMatch}
-        setCurrentMatch={setCurrentMatch}
+        setCurrentMatchAction={setCurrentMatch}
         matchId={matchId}
-        setMatchId={setMatchId}
-        setDidCreateMatch={setDidCreateMatch}
+        setMatchIdAction={setMatchId}
+        setDidCreateMatchAction={setDidCreateMatch}
         pendingJoin={pendingJoin}
-        setPendingJoin={setPendingJoin}
+        setPendingJoinAction={setPendingJoin}
         previewCost={previewCost}
         previewCurrent={previewCurrent}
         previewAfter={previewAfter}
-        loadUser={loadUser}
-        onJoined={(match) => {
+        loadUserAction={loadUser}
+        onJoinedAction={(match) => {
           setCurrentMatch(match);
           setMatchId("");
           setPendingJoin(null);
         }}
-        onMatchFinished={() => {
+        onMatchFinishedAction={() => {
           setCurrentMatch(null);
           setMatchId("");
           setDidCreateMatch(false);
         }}
-        onMatchCancelled={() => {
-          setCurrentMatch(null);
-          setMatchId("");
-          setDidCreateMatch(false);
-        }}
-        setLeaderboard={setLeaderboard}
+        setLeaderboardAction={setLeaderboard}
       />
       {
         isMatchVisible && (
