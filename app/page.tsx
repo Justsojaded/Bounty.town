@@ -771,15 +771,6 @@ export default function Home() {
       >
         About
       </a>
-      {canCancelMatch && (
-        <button
-          style={{ ...btn, background: "red", color: "white" }}
-          onClick={handleCancelMatch}
-        >
-          ❌ Cancel Match
-        </button>
-      )}
-
       <MatchControls
         btn={btn}
         bounty={bounty ?? 0}
@@ -809,105 +800,18 @@ export default function Home() {
           setMatchId("");
           setPendingJoin(null);
         }}
+        onMatchFinished={() => {
+          setCurrentMatch(null);
+          setMatchId("");
+          setDidCreateMatch(false);
+        }}
+        onMatchCancelled={() => {
+          setCurrentMatch(null);
+          setMatchId("");
+          setDidCreateMatch(false);
+        }}
+        setLeaderboard={setLeaderboard}
       />
-      {currentMatch?.mode === "pvp" && canFinishMatch && (
-        <button
-          style={{ ...btn, background: "green", color: "white" }}
-          onClick={async () => {
-            const res = await fetch("/api/match/finish", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                match_id: currentMatch.id,
-                winner_id: session.user.id,
-                caller_id: session.user.id,
-              }),
-            });
-
-            if (!res.ok) {
-              showPopup("Failed to finish match");
-              return;
-            }
-
-            await loadUser(session.user.id);
-
-            const updatedLeaderboard = await fetch("/api/leaderboard");
-            const data = await updatedLeaderboard.json();
-            setLeaderboard(data.data || []);
-
-            showPopup("🏆 Match finished!");
-            setCurrentMatch(null);
-            setMatchId("");
-            setDidCreateMatch(false);
-          }}
-        >
-          🏆 Declare Winner (Me)
-        </button>
-      )}
-
-      {
-        currentMatch?.mode === "solo" && canFinishMatch && (
-          <>
-            <button
-              style={{ ...btn, background: "green", color: "white" }}
-              onClick={async () => {
-                const res = await fetch("/api/match/finish", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({
-                    match_id: currentMatch.id,
-                    winner_id: currentMatch.creator_id,
-                    caller_id: session.user.id,
-                  }),
-                });
-
-                if (!res.ok) {
-                  showPopup("Failed to finish match");
-                  return;
-                }
-
-                await loadUser(session.user.id);
-                showPopup("🏆 You WON");
-
-                setCurrentMatch(null);
-                setMatchId("");
-                setDidCreateMatch(false);
-              }}
-            >
-              🏆 Win
-            </button>
-
-            <button
-              style={{ ...btn, background: "red", color: "white" }}
-              onClick={async () => {
-                const res = await fetch("/api/match/finish", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({
-                    match_id: currentMatch.id,
-                    winner_id: null,
-                    caller_id: session.user.id,
-                  }),
-                });
-
-                if (!res.ok) {
-                  showPopup("Failed to finish match");
-                  return;
-                }
-
-                await loadUser(session.user.id);
-                showPopup("💀 You LOST");
-
-                setCurrentMatch(null);
-                setMatchId("");
-                setDidCreateMatch(false);
-              }}
-            >
-              💀 Lose
-            </button>
-          </>
-        )
-      }
       {
         isMatchVisible && (
           <VoteContext.Provider value={handleVote}>

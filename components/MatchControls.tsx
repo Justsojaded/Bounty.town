@@ -43,7 +43,7 @@ type MatchControlsProps = {
   setMatchTitle: (title: string) => void;
   sessionUserId: string;
   showPopup: (message: string) => void;
-  setBounty: React.Dispatch<React.SetStateAction<number>>;
+  setBounty: Dispatch<SetStateAction<number>>;
   currentMatch: Match | null;
   setCurrentMatch: (match: Match | null) => void;
   matchId: string;
@@ -56,6 +56,9 @@ type MatchControlsProps = {
   previewAfter: number;
   loadUser: (userId: string) => Promise<void>;
   onJoined: (match: Match) => void;
+  onMatchFinished: () => void;
+  onMatchCancelled: () => void;
+  setLeaderboard: Dispatch<SetStateAction<any[]>>;
 };
 
 export default function MatchControls({
@@ -83,6 +86,9 @@ export default function MatchControls({
   previewAfter,
   loadUser,
   onJoined,
+  onMatchFinished,
+  onMatchCancelled,
+  setLeaderboard
 }: MatchControlsProps) {
   const createMatch = async () => {
     if (mode === "pvp" && bounty < betAmount) {
@@ -115,7 +121,35 @@ export default function MatchControls({
       setMatchTitle("");
     }
   };
+  const finishMatch = async (winnerId: string | null, message: string) => {
+    if (!currentMatch) return;
 
+    const res = await fetch("/api/match/finish", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        match_id: currentMatch.id,
+        winner_id: winnerId,
+        caller_id: sessionUserId,
+      }),
+    });
+
+    if (!res.ok) {
+      showPopup("Failed to finish match");
+      return;
+    }
+
+    await loadUser(sessionUserId);
+
+    if (currentMatch.mode === "pvp") {
+      const updatedLeaderboard = await fetch("/api/leaderboard");
+      const data = await updatedLeaderboard.json();
+      setLeaderboard(data.data || []);
+    }
+
+    showPopup(message);
+    onMatchFinished();
+  };
   const lookupMatch = async () => {
     const res = await fetch(`/api/match/get?id=${matchId}`);
     const data = await res.json();
@@ -325,6 +359,42 @@ export default function MatchControls({
           loadUser={loadUser}
         />
       )}
+      {currentMatch?.mode === "pvp" &&
+        (
+          currentMatch.creator_id === sessionUserId ||
+          currentMatch.opponent_id === sessionUserId
+        ) && (
+          <button
+            style={{ ...btn, background: "green", color: "white" }}
+            onClick={() => finishMatch(sessionUserId, "🏆 Match finished!")}
+          >
+            🏆 Declare Winner (Me)
+          </button>
+        )}
+
+      {currentMatch?.mode === "solo" &&
+        currentMatch.creator_id === sessionUserId && (
+          <>
+            <button
+              style={{ ...btn, background: "green", color: "white" }}
+              onClick={() =>
+                finishMatch(
+                  currentMatch.creator_id ?? null,
+                  "🏆 You WON"
+                )
+              }
+            >
+              🏆 Win
+            </button>
+
+            <button
+              style={{ ...btn, background: "red", color: "white" }}
+              onClick={() => finishMatch(null, "💀 You LOST")}
+            >
+              💀 Lose
+            </button>
+          </>
+        )}
     </>
   );
 }
