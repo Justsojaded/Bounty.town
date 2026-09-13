@@ -1,5 +1,3 @@
-"use client";
-
 type JoinMatchPromptProps = {
     previewCost: number;
     previewCurrent: number;
