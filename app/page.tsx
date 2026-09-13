@@ -5,6 +5,7 @@ import { useSession, signIn, signOut } from "next-auth/react";
 import { supabase } from "@/lib/supabase";
 import { VoteContext } from "../components/VoteContext";
 import MatchView from "../components/MatchView";
+import JoinMatchPrompt from "../components/JoinMatchPrompt";
 type MatchStatus =
   | "open"
   | "active"
@@ -1043,76 +1044,21 @@ export default function Home() {
       )}
 
       {shouldShowJoinPrompt && (
-        <div
-          style={{
-            marginTop: 15,
-            padding: 12,
-            border: "1px solid #444",
-            borderRadius: 8,
-            width: 300,
-            textAlign: "center",
-            background: "#111",
+        <JoinMatchPrompt
+          previewCost={previewCost}
+          previewCurrent={previewCurrent}
+          previewAfter={previewAfter}
+          onCancel={() => setPendingJoin(null)}
+          pendingJoin={pendingJoin}
+          sessionUserId={session.user.id}
+          onJoined={(match) => {
+            setCurrentMatch(match);
+            setMatchId("");
+            setPendingJoin(null);
           }}
-        >
-          <p style={{ marginBottom: 10 }}>
-            Join match for <b>{previewCost}</b> bounty?
-          </p>
-
-          <div style={{ fontSize: 13, color: "#aaa", marginBottom: 10 }}>
-            <div>You have: {previewCurrent}</div>
-            <div>Cost: -{previewCost}</div>
-            <div style={{ marginTop: 4 }}>
-              After: <b>{previewAfter}</b>
-            </div>
-          </div>
-
-          <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
-            <button
-              style={{ ...btn, background: "green", color: "white" }}
-              onClick={async () => {
-                if (!pendingJoin) return;
-
-                const joinRes = await fetch("/api/match/join", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({
-                    user_id: session.user.id,
-                    match_id: pendingJoin.matchId,
-                  }),
-                });
-
-                const joinData = await joinRes.json();
-
-                if (!joinRes.ok) {
-                  showPopup(joinData.error || "Failed to join match");
-                  return;
-                }
-
-                setCurrentMatch(joinData.data);
-                setMatchId("");
-                setPendingJoin(null);
-
-                // ✅ ADD THIS
-                await loadUser(session.user.id);
-
-                showPopup(
-                  joinData.alreadyJoined
-                    ? "👀 You're already in this match"
-                    : "✅ Joined match!"
-                );
-              }}
-            >
-              Confirm Join
-            </button>
-
-            <button
-              style={{ ...btn, background: "red", color: "white" }}
-              onClick={() => setPendingJoin(null)}
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
+          showPopup={showPopup}
+          loadUser={loadUser}
+        />
       )}
 
       {
