@@ -1,13 +1,26 @@
 "use client";
 
+import type { CSSProperties, Dispatch, SetStateAction } from "react";
 import JoinMatchPrompt from "./JoinMatchPrompt";
 
 type Match = {
   mode?: "pvp" | "solo";
   id: string;
-  status: string;
+  status:
+  | "open"
+  | "active"
+  | "lobby"
+  | "waiting"
+  | "finished"
+  | "expired"
+  | "cancelled";
+  title?: string;
   creator_id?: string;
   opponent_id?: string;
+  creator?: any;
+  opponent?: any;
+  created_at?: string;
+  bounty_pool?: number;
   bet_amount?: number;
 };
 
@@ -19,7 +32,7 @@ type PendingJoin = {
 };
 
 type MatchControlsProps = {
-  btn: React.CSSProperties;
+  btn: CSSProperties;
   bounty: number;
   mode: "pvp" | "solo" | null;
   setMode: (mode: "pvp" | "solo" | null) => void;
@@ -30,6 +43,7 @@ type MatchControlsProps = {
   setMatchTitle: (title: string) => void;
   sessionUserId: string;
   showPopup: (message: string) => void;
+  setBounty: React.Dispatch<React.SetStateAction<number>>;
   currentMatch: Match | null;
   setCurrentMatch: (match: Match | null) => void;
   matchId: string;
@@ -56,6 +70,7 @@ export default function MatchControls({
   setMatchTitle,
   sessionUserId,
   showPopup,
+  setBounty,
   currentMatch,
   setCurrentMatch,
   matchId,
