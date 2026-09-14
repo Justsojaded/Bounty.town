@@ -14,64 +14,91 @@ export async function POST(req: NextRequest) {
   const username = session.user.name ?? "unknown";
   const today = new Date().toISOString().split("T")[0];
 
-  // 1️⃣ GET USER
-  let { data: user, error: userError } = await supabaseAdmin
-    .from("bounties")
-    .select("*")
-    .eq("user_id", user_id)
-    .maybeSingle();
-
-  // 2️⃣ AUTO CREATE USER IF MISSING
-  if (!user) {
-    const { error: insertError } = await supabaseAdmin.from("bounties").insert({
-      user_id,
-      username,
-      bounty: 0,
-      points: 0,
-      last_login: null,
-    });
-
-    if (insertError) {
-      return NextResponse.json({ error: "Failed to create user" });
-    }
-
-    // re-fetch user after creation
-    const res = await supabaseAdmin
+  // Fetch the user and first-login achievement at the same time.
+  // This avoids making the achievement lookup wait for the user lookup.
+  const [userResult, achievementResult] = await Promise.all([
+    supabaseAdmin
       .from("bounties")
-      .select("*")
+      .select("user_id, bounty, last_login")
       .eq("user_id", user_id)
-      .maybeSingle();
+      .maybeSingle(),
+    supabaseAdmin
+      .from("achievements")
+      .select("user_id")
+      .eq("user_id", user_id)
+      .eq("achievement_id", "first_login")
+      .maybeSingle(),
+  ]);
 
-    user = res.data;
+  if (userResult.error) {
+    return NextResponse.json(
+      { error: userResult.error.message },
+      { status: 500 }
+    );
   }
 
+  let user = userResult.data;
   let bountyAdded = 0;
-  let unlocked: string[] = [];
+  const unlocked: string[] = [];
 
-  // 3️⃣ DAILY LOGIN
-  if (user?.last_login !== today) {
+  // Create a missing user and award today's login bonus in one write.
+  if (!user) {
     bountyAdded = 25;
 
-    await supabaseAdmin
+    const { data: createdUser, error: insertError } = await supabaseAdmin
+      .from("bounties")
+      .insert({
+        user_id,
+        username,
+        bounty: 25,
+        points: 0,
+        last_login: today,
+      })
+      .select("user_id, bounty, last_login")
+      .single();
+
+    if (insertError || !createdUser) {
+      return NextResponse.json(
+        { error: insertError?.message ?? "Failed to create user" },
+        { status: 500 }
+      );
+    }
+
+    user = createdUser;
+  } else if (user.last_login !== today) {
+    bountyAdded = 25;
+
+    const { data: updatedUser, error: updateError } = await supabaseAdmin
       .from("bounties")
       .update({
         bounty: (user.bounty || 0) + 25,
         last_login: today,
       })
-      .eq("user_id", user_id);
+      .eq("user_id", user_id)
+      .select("user_id, bounty, last_login")
+      .single();
 
-    unlocked.push("daily_login");
+    if (updateError || !updatedUser) {
+      return NextResponse.json(
+        { error: updateError?.message ?? "Failed to update daily reward" },
+        { status: 500 }
+      );
+    }
+
+    user = updatedUser;
   }
 
-  // 4️⃣ ACHIEVEMENTS
-  const { data: existing, error: fetchError } = await supabaseAdmin
-    .from("achievements")
-    .select("user_id")
-    .eq("user_id", user_id)
-    .eq("achievement_id", "first_login")
-    .maybeSingle();
+  // Keep the first-login achievement, but don't let its lookup delay the
+  // user lookup. The achievement table currently has no unique constraint,
+  // so keep the existing check-then-insert behavior.
+  if (achievementResult.error) {
+    return NextResponse.json(
+      { error: achievementResult.error.message },
+      { status: 500 }
+    );
+  }
 
-  if (!existing) {
+  if (!achievementResult.data) {
     const { error: insertError } = await supabaseAdmin
       .from("achievements")
       .insert({
@@ -83,6 +110,10 @@ export async function POST(req: NextRequest) {
     if (!insertError) {
       unlocked.push("first_login");
     }
+  }
+
+  if (bountyAdded > 0) {
+    unlocked.push("daily_login");
   }
 
   return NextResponse.json({ bountyAdded, unlocked });
