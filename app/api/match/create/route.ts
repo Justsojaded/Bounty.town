@@ -50,7 +50,9 @@ export async function POST(req: Request) {
       mode,
       title: title || null,
       bet_amount: betAmount,
-      bounty_pool: 0,
+      // In PvP, the creator's entry fee is already part of the pool.
+      // The opponent's entry fee is added when they join.
+      bounty_pool: isSolo ? 0 : betAmount,
       last_activity_at: new Date().toISOString(),
     })
     .select()
