@@ -89,7 +89,7 @@ export default function ProfileMatches({
                                 {match.title && (
                                     <p className="text-lg font-semibold">
                                         {match.mode === "solo" ? "🎯 Solo" : "⚔️ PvP"}
-                                        {match.title && ` — ${match.title}`}
+                                        {` — ${match.title}`}
                                     </p>
                                 )}
 
