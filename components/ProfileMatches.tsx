@@ -115,10 +115,6 @@ export default function ProfileMatches({
                                     </p>
                                 )}
 
-                                <p>
-                                    Date:{" "}
-                                    {new Date(match.created_at).toISOString().split("T")[0]}
-                                </p>
                                 {isOwnProfile && (
                                     <button
                                         onClick={() => hideMatch(match.id)}
