@@ -31,6 +31,70 @@ export default async function PublicProfile({
         .or(`creator_id.eq.${user.user_id},opponent_id.eq.${user.user_id}`)
         .eq("status", "finished")
         .order("created_at", { ascending: false });
+
+    const { data: votedMatches, error: votedMatchesError } = await supabaseAdmin
+        .from("match_votes")
+        .select("match_id, vote, bet_amount")
+        .eq("user_id", user.user_id);
+    const votedMatchIds = (votedMatches ?? []).map(
+        (vote) => vote.match_id
+    );
+    const { data: votedMatchDetails } = votedMatchIds.length
+        ? await supabaseAdmin
+            .from("matches")
+            .select(
+                "id, creator_id, opponent_id, status, winner_id, created_at, mode, bounty_pool, title"
+            )
+            .in("id", votedMatchIds)
+            .eq("status", "finished")
+        : { data: [] };
+
+    const matchIds = [
+        ...(matches ?? []).map((match) => match.id),
+        ...votedMatchIds,
+    ];
+
+    const { data: matchVotes } = matchIds.length
+        ? await supabaseAdmin
+            .from("match_votes")
+            .select("match_id")
+            .in("match_id", matchIds)
+        : { data: [] };
+
+    const voterCounts = new Map<string, number>();
+
+    for (const vote of matchVotes ?? []) {
+        voterCounts.set(
+            vote.match_id,
+            (voterCounts.get(vote.match_id) ?? 0) + 1
+        );
+    }
+
+    const voteHistory = (votedMatchDetails ?? [])
+        .map((match) => {
+            const vote = (votedMatches ?? []).find(
+                (v) => v.match_id === match.id
+            );
+
+            if (!vote) return null;
+
+            const correctVote =
+                match.winner_id === match.creator_id
+                    ? "A"
+                    : match.winner_id === match.opponent_id
+                        ? "B"
+                        : null;
+
+            return {
+                ...match,
+                userVote: vote.vote,
+                correct: correctVote !== null && vote.vote === correctVote,
+                voterCount: voterCounts.get(match.id) ?? 0,
+            };
+        })
+        .filter(
+            (match): match is NonNullable<typeof match> => match !== null
+        );
     const { data: hiddenMatches } = await supabaseAdmin
         .from("hidden_matches")
         .select("match_id")
@@ -39,9 +103,12 @@ export default async function PublicProfile({
         (hiddenMatches ?? []).map((match) => match.match_id)
     );
 
-    const visibleMatches = (matches ?? []).filter(
-        (match) => !hiddenIds.has(match.id)
-    );
+    const visibleMatches = (matches ?? [])
+        .filter((match) => !hiddenIds.has(match.id))
+        .map((match) => ({
+            ...match,
+            voterCount: voterCounts.get(match.id) ?? 0,
+        }));
     return (
         <main className="min-h-screen p-6 flex flex-col items-center">
             <a
@@ -154,6 +221,7 @@ export default async function PublicProfile({
                         matches={visibleMatches}
                         userId={user.user_id}
                         isOwnProfile={isOwnProfile}
+                        voteHistory={voteHistory}
                     />
                 </section>
             </div>

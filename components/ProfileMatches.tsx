@@ -12,23 +12,43 @@ type Match = {
     mode: string;
     bounty_pool: number;
     title: string | null;
+    voterCount: number;
+};
+type VoteHistory = Match & {
+    userVote: string;
+    correct: boolean;
 };
 
 export default function ProfileMatches({
     matches,
     userId,
     isOwnProfile,
+    voteHistory,
 }: {
     matches: Match[];
     userId: string;
     isOwnProfile: boolean;
+    voteHistory: VoteHistory[];
 }) {
     const [page, setPage] = useState(1);
     const pageSize = 10;
-
+    const combinedMatches = [
+        ...matches.map((match) => ({
+            ...match,
+            historyType: "played" as const,
+        })),
+        ...voteHistory.map((match) => ({
+            ...match,
+            historyType: "voted" as const,
+        })),
+    ].sort(
+        (a, b) =>
+            new Date(b.created_at).getTime() -
+            new Date(a.created_at).getTime()
+    );
     const start = (page - 1) * pageSize;
-    const paginatedMatches = matches.slice(start, start + pageSize);
-    const hasNextPage = start + pageSize < matches.length;
+    const paginatedMatches = combinedMatches.slice(start, start + pageSize);
+    const hasNextPage = start + pageSize < combinedMatches.length;
     const hideMatch = async (matchId: string) => {
         const response = await fetch("/api/profile/hide-match", {
             method: "POST",
@@ -59,6 +79,7 @@ export default function ProfileMatches({
                 {paginatedMatches.length ? (
                     paginatedMatches.map((match) => {
                         const won = match.winner_id === userId;
+                        const wasPlayer = match.historyType === "played";
 
                         return (
                             <div
@@ -79,16 +100,24 @@ export default function ProfileMatches({
                                 <p>
                                     Bounty Pool: {match.bounty_pool}
                                 </p>
-
                                 <p>
-                                    Result: {won ? "Won" : "Lost"}
+                                    👥 Voters: {match.voterCount}
                                 </p>
+
+                                {wasPlayer ? (
+                                    <p>
+                                        Result: {won ? "Won" : "Lost"}
+                                    </p>
+                                ) : (
+                                    <p>
+                                        You voted: {match.userVote} —{" "}
+                                        {match.correct ? "Correct ✓" : "Wrong ✗"}
+                                    </p>
+                                )}
 
                                 <p>
                                     Date:{" "}
-                                    {new Date(
-                                        match.created_at
-                                    ).toLocaleDateString()}
+                                    {new Date(match.created_at).toISOString().split("T")[0]}
                                 </p>
                                 {isOwnProfile && (
                                     <button
