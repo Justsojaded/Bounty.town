@@ -3,6 +3,7 @@ import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../api/auth/[...nextauth]/route";
 import ProfileMatches from "@/components/ProfileMatches";
+
 export default async function PublicProfile({
     params,
 }: {
@@ -34,7 +35,7 @@ export default async function PublicProfile({
 
     const { data: votedMatches } = await supabaseAdmin
         .from("match_votes")
-        .select("match_id, vote, bet_amount")
+        .select("match_id, vote")
         .eq("user_id", user.user_id);
     const votedMatchIds = (votedMatches ?? []).map(
         (vote) => vote.match_id
