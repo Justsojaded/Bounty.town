@@ -81,9 +81,9 @@ export default async function PublicProfile({
 
             const correctVote =
                 match.winner_id === match.creator_id
-                    ? "A"
+                    ? "B"
                     : match.winner_id === match.opponent_id
-                        ? "B"
+                        ? "A"
                         : null;
 
             return {
