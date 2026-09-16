@@ -92,11 +92,6 @@ export default function ProfileMatches({
                                         {` — ${match.title}`}
                                     </p>
                                 )}
-
-                                <p className="font-semibold">
-                                    Match #{match.id}
-                                </p>
-
                                 <p>
                                     Bounty Pool: {match.bounty_pool}
                                 </p>
