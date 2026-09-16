@@ -23,7 +23,7 @@ export default async function PublicProfile({
     if (!user) {
         notFound();
     }
-    const { data: matches, error: matchesError } = await supabaseAdmin
+    const { data: matches } = await supabaseAdmin
         .from("matches")
         .select(
             "id, creator_id, opponent_id, status, winner_id, created_at, mode, bounty_pool, title"
@@ -32,7 +32,7 @@ export default async function PublicProfile({
         .eq("status", "finished")
         .order("created_at", { ascending: false });
 
-    const { data: votedMatches, error: votedMatchesError } = await supabaseAdmin
+    const { data: votedMatches } = await supabaseAdmin
         .from("match_votes")
         .select("match_id, vote, bet_amount")
         .eq("user_id", user.user_id);
@@ -102,7 +102,9 @@ export default async function PublicProfile({
     const hiddenIds = new Set(
         (hiddenMatches ?? []).map((match) => match.match_id)
     );
-
+    const visibleVoteHistory = voteHistory.filter(
+        (match) => !hiddenIds.has(match.id)
+    );
     const visibleMatches = (matches ?? [])
         .filter((match) => !hiddenIds.has(match.id))
         .map((match) => ({
@@ -221,7 +223,7 @@ export default async function PublicProfile({
                         matches={visibleMatches}
                         userId={user.user_id}
                         isOwnProfile={isOwnProfile}
-                        voteHistory={voteHistory}
+                        voteHistory={visibleVoteHistory}
                     />
                 </section>
             </div>

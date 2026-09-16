@@ -110,7 +110,7 @@ export default function ProfileMatches({
                                     </p>
                                 ) : (
                                     <p>
-                                        You voted: {match.userVote} —{" "}
+                                        Voted: {match.userVote} —{" "}
                                         {match.correct ? "Correct ✓" : "Wrong ✗"}
                                     </p>
                                 )}
