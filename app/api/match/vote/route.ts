@@ -150,81 +150,28 @@ export async function POST(request: Request) {
     );
   }
 
-  const { data: latestMatch, error: latestMatchError } = await supabaseAdmin
-    .from("matches")
-    .select("status")
-    .eq("id", String(match_id))
-    .single();
-
-  if (latestMatchError || !latestMatch) {
-    return Response.json(
-      { error: "Match no longer exists" },
-      { status: 404 }
-    );
-  }
-
-  if (!["open", "active", "lobby", "waiting"].includes(latestMatch.status)) {
-    return Response.json(
-      { error: "Voting is closed" },
-      { status: 400 }
-    );
-  }
-
-  const { data: updatedBounty, error: deductError } = await supabaseAdmin
-    .from("bounties")
-    .update({ bounty: user.bounty - BET_COST })
-    .eq("user_id", user_id)
-    .gte("bounty", BET_COST)
-    .select("user_id")
-    .maybeSingle();
-
-  if (deductError || !updatedBounty) {
-    return Response.json(
-      { error: "Failed to deduct bounty" },
-      { status: 500 }
-    );
-  }
-
-  const { error: poolError } = await supabaseAdmin
-    .from("matches")
-    .update({ bounty_pool: (match.bounty_pool || 0) + BET_COST })
-    .eq("id", match_id);
-
-  if (poolError) {
-    await supabaseAdmin
-      .from("bounties")
-      .update({ bounty: user.bounty })
-      .eq("user_id", user_id);
-
-    return Response.json(
-      { error: "Failed to add bounty to pool" },
-      { status: 500 }
-    );
-  }
-
-  // 6. Save the locked website vote.
-  const { error } = await supabaseAdmin
-    .from("match_votes")
-    .insert({
-      match_id: String(match_id),
-      user_id,
-      vote,
-      updated_at: new Date().toISOString(),
-      bet_amount: BET_COST,
+  const { data: voteResult, error: voteError } =
+    await supabaseAdmin.rpc("place_match_vote", {
+      p_match_id: String(match_id),
+      p_user_id: user_id,
+      p_vote: vote,
+      p_bet_amount: BET_COST,
     });
 
-  if (error) {
-    await supabaseAdmin
-      .from("bounties")
-      .update({ bounty: user.bounty })
-      .eq("user_id", user_id);
+  if (voteError) {
+    console.error("ATOMIC VOTE FAILED:", voteError);
 
-    await supabaseAdmin
-      .from("matches")
-      .update({ bounty_pool: Math.max(0, (match.bounty_pool || 0) - BET_COST) })
-      .eq("id", match_id);
+    return Response.json(
+      { error: "Failed to process vote" },
+      { status: 500 }
+    );
+  }
 
-    return Response.json({ error: error.message }, { status: 500 });
+  if (!voteResult?.success) {
+    return Response.json(
+      { error: voteResult?.error || "Failed to process vote" },
+      { status: 400 }
+    );
   }
 
   return Response.json({ success: true });
