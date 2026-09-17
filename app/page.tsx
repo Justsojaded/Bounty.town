@@ -833,6 +833,21 @@ export default function Home() {
           </VoteContext.Provider>
         )
       }
+      {currentMatch?.status === "open" &&
+        currentMatch.creator_id === session?.user?.id &&
+        totalVotes === 0 && (
+          <button
+            style={{
+              ...btn,
+              background: "red",
+              color: "white",
+              marginTop: 10,
+            }}
+            onClick={handleCancelMatch}
+          >
+            ❌ Cancel Game
+          </button>
+        )}
 
       {
         popup && (

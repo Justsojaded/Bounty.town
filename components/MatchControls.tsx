@@ -122,31 +122,6 @@ export default function MatchControls({
     }
   };
 
-  const cancelMatch = async () => {
-    if (!currentMatch) return;
-
-    const res = await fetch("/api/match/cancel", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        match_id: currentMatch.id,
-        caller_id: sessionUserId,
-      }),
-    });
-
-    if (!res.ok) {
-      showPopup("Failed to cancel match");
-      return;
-    }
-
-    showPopup("❌ Match cancelled");
-
-    setCurrentMatch(null);
-    setMatchId("");
-    setDidCreateMatch(false);
-
-    await loadUser(sessionUserId);
-  };
   const finishMatch = async (winnerId: string | null, message: string) => {
     if (!currentMatch) return;
 
@@ -349,16 +324,6 @@ export default function MatchControls({
           Match ID: <b>{currentMatch.id}</b>
         </p>
       )}
-
-      {currentMatch?.status === "open" &&
-        currentMatch.creator_id === sessionUserId && (
-          <button
-            style={{ ...btn, background: "red", color: "white" }}
-            onClick={cancelMatch}
-          >
-            ❌ Cancel Game
-          </button>
-        )}
 
       {!currentMatch && !pendingJoin && !mode && (
         <div style={{ marginTop: 10 }}>
