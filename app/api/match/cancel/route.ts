@@ -86,6 +86,13 @@ export async function POST(req: Request) {
       );
     }
 
+    if (votes && votes.length > 0) {
+      return NextResponse.json(
+        { error: "Cannot cancel — votes already exist" },
+        { status: 400 }
+      );
+    }
+
     const refundedWebsiteUsers = new Set<string>();
 
     for (const vote of votes || []) {

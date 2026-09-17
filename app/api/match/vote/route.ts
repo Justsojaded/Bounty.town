@@ -150,6 +150,26 @@ export async function POST(request: Request) {
     );
   }
 
+  const { data: latestMatch, error: latestMatchError } = await supabaseAdmin
+    .from("matches")
+    .select("status")
+    .eq("id", String(match_id))
+    .single();
+
+  if (latestMatchError || !latestMatch) {
+    return Response.json(
+      { error: "Match no longer exists" },
+      { status: 404 }
+    );
+  }
+
+  if (!["open", "active", "lobby", "waiting"].includes(latestMatch.status)) {
+    return Response.json(
+      { error: "Voting is closed" },
+      { status: 400 }
+    );
+  }
+
   const { data: updatedBounty, error: deductError } = await supabaseAdmin
     .from("bounties")
     .update({ bounty: user.bounty - BET_COST })
