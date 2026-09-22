@@ -81,7 +81,7 @@ From your Supabase project's API settings, copy:
 
 Project URL → `NEXT_PUBLIC_SUPABASE_URL`
 
-Anon/Public key → `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+Supabase Public key → `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
 
 Service Role key → `SUPABASE_SERVICE_ROLE_KEY`
 
