@@ -56,8 +56,8 @@ This project is not intended to be a demonstration of production-level architect
 Clone the repository and install dependencies:
 
 ```bash
-git clone https://github.com/justsojaded/Bounty-app.git
-cd Bounty-app
+git clone https://github.com/justsojaded/Bounty.Town.git
+cd Bounty.town
 npm install
 ```
 
@@ -157,7 +157,7 @@ These are the environment variables you may need to add to Vercel:
 4. `NEXTAUTH_URL` — URL of your deployed bounty.town site
 5. `TWITCH_CLIENT_ID` — Twitch application client ID
 6. `NEXTAUTH_SECRET` — secure secret used by NextAuth
-7. `NEXT_PUBLIC_SUPABASE_ANON_KEY` — Supabase anonymous/public API key
+7. `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` — Supabase publishable API key
 8. `NEXT_PUBLIC_SUPABASE_URL` — Supabase project URL
 9. `SUPABASE_SERVICE_ROLE_KEY` — Supabase service role key
 
