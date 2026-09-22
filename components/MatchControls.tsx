@@ -1,0 +1,401 @@
+"use client";
+import type {
+  CSSProperties,
+  Dispatch,
+  SetStateAction,
+} from "react";
+import JoinMatchPrompt from "./JoinMatchPrompt";
+
+type Match = {
+  mode?: "pvp" | "solo";
+  id: string;
+  status:
+  | "open"
+  | "active"
+  | "lobby"
+  | "waiting"
+  | "finished"
+  | "expired"
+  | "cancelled";
+  title?: string;
+  creator_id?: string;
+  opponent_id?: string;
+  creator?: any;
+  opponent?: any;
+  created_at?: string;
+  bounty_pool?: number;
+  bet_amount?: number;
+};
+
+type PendingJoin = {
+  matchId: string;
+  betAmount: number;
+  mode: "pvp" | "solo";
+  isParticipant: boolean;
+};
+
+type MatchControlsProps = {
+  btn: CSSProperties;
+  bounty: number;
+  mode: "pvp" | "solo" | null;
+  setModeAction: (mode: "pvp" | "solo" | null) => void;
+  showModeSelect: boolean;
+  betAmount: number;
+  setBetAmountAction: (amount: number) => void;
+  matchTitle: string;
+  setMatchTitleAction: (title: string) => void;
+  sessionUserId: string;
+  showPopupAction: (message: string) => void;
+  currentMatch: Match | null;
+  setCurrentMatchAction: (match: Match | null) => void;
+  matchId: string;
+  setMatchIdAction: (id: string) => void;
+  setDidCreateMatchAction: (value: boolean) => void;
+  pendingJoin: PendingJoin | null;
+  setPendingJoinAction: (join: PendingJoin | null) => void;
+  previewCost: number;
+  previewCurrent: number;
+  previewAfter: number;
+  loadUserAction: (userId: string) => Promise<void>;
+  onJoinedAction: (match: Match) => void;
+  onMatchFinishedAction: () => void;
+  setLeaderboardAction: Dispatch<SetStateAction<any[]>>;
+};
+
+export default function MatchControls({
+  btn,
+  bounty,
+  mode,
+  setModeAction: setMode,
+  showModeSelect,
+  betAmount,
+  setBetAmountAction: setBetAmount,
+  matchTitle,
+  setMatchTitleAction: setMatchTitle,
+  sessionUserId,
+  showPopupAction: showPopup,
+  currentMatch,
+  setCurrentMatchAction: setCurrentMatch,
+  matchId,
+  setMatchIdAction: setMatchId,
+  setDidCreateMatchAction: setDidCreateMatch,
+  pendingJoin,
+  setPendingJoinAction: setPendingJoin,
+  previewCost,
+  previewCurrent,
+  previewAfter,
+  loadUserAction: loadUser,
+  onJoinedAction: onJoined,
+  onMatchFinishedAction: onMatchFinished,
+  setLeaderboardAction: setLeaderboard,
+}: MatchControlsProps) {
+  const createMatch = async () => {
+    if (mode === "pvp" && bounty < betAmount) {
+      showPopup("💰 You don't have enough bounty to create this match");
+      return;
+    }
+
+    const res = await fetch("/api/match/create", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        user_id: sessionUserId,
+        mode,
+        bet_amount: betAmount,
+        title: matchTitle,
+      }),
+    });
+
+    const result = await res.json();
+
+    setMode(null);
+
+    if (result.data) {
+      const full = await fetch(`/api/match/get?id=${result.data.id}`)
+        .then((r) => r.json());
+
+      setCurrentMatch(full.data);
+      setMatchId(full.data.id);
+      setDidCreateMatch(true);
+      setMatchTitle("");
+      await loadUser(sessionUserId);
+    }
+  };
+
+  const finishMatch = async (winnerId: string | null, message: string) => {
+    if (!currentMatch) return;
+
+    const res = await fetch("/api/match/finish", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        match_id: currentMatch.id,
+        winner_id: winnerId,
+        caller_id: sessionUserId,
+      }),
+    });
+
+    if (!res.ok) {
+      showPopup("Failed to finish match");
+      return;
+    }
+
+    await loadUser(sessionUserId);
+
+    if (currentMatch.mode === "pvp") {
+      const updatedLeaderboard = await fetch("/api/leaderboard");
+      const data = await updatedLeaderboard.json();
+      setLeaderboard(data.data || []);
+    }
+
+    showPopup(message);
+    onMatchFinished();
+  };
+  const lookupMatch = async () => {
+    const res = await fetch(`/api/match/get?id=${matchId}`);
+    const data = await res.json();
+
+    const match = data.data;
+    if (!match) {
+      showPopup("Match not found");
+      return;
+    }
+
+    const isCreator = sessionUserId === match.creator_id;
+    const isOpponent = sessionUserId === match.opponent_id;
+    const isParticipant = isCreator || isOpponent;
+    const isPvPFull = match.mode === "pvp" && match.opponent_id;
+
+    if (isParticipant || match.mode === "solo" || isPvPFull) {
+      setCurrentMatch(match);
+      setMatchId("");
+      setPendingJoin(null);
+      return;
+    }
+
+    setPendingJoin({
+      matchId: match.id,
+      betAmount: match.bet_amount ?? 0,
+      mode: match.mode,
+      isParticipant: false,
+    });
+  };
+
+  const shouldShowJoinPrompt =
+    !!pendingJoin &&
+    (pendingJoin.mode === "pvp" || pendingJoin.mode === "solo");
+
+  return (
+    <>
+      {mode && showModeSelect && (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            gap: 10,
+            marginTop: 10,
+          }}
+        >
+          <button
+            onClick={() => {
+              setCurrentMatch(null);
+              setMatchId("");
+              setDidCreateMatch(false);
+              setMode(null);
+            }}
+            style={{
+              ...btn,
+              background: "#333",
+              color: "white",
+              marginTop: 0,
+            }}
+          >
+            ⬅ Back
+          </button>
+
+          <button
+            style={{
+              ...btn,
+              background: "#444",
+              color: "white",
+              width: 200,
+            }}
+            onClick={createMatch}
+          >
+            🎮 Create Match
+          </button>
+        </div>
+      )}
+
+      {!mode && showModeSelect && (
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            textAlign: "center",
+          }}
+        >
+          <h2>Choose Mode</h2>
+
+          <div
+            style={{
+              display: "flex",
+              gap: 12,
+              justifyContent: "center",
+              marginTop: 10,
+            }}
+          >
+            <button
+              onClick={() => setMode("pvp")}
+              style={{
+                ...btn,
+                background: "#1e90ff",
+                color: "white",
+                minWidth: 140,
+              }}
+            >
+              🆚 PvP
+            </button>
+
+            <button
+              onClick={() => setMode("solo")}
+              style={{
+                ...btn,
+                background: "#ff9800",
+                color: "white",
+                minWidth: 140,
+              }}
+            >
+              🎲 Solo
+            </button>
+          </div>
+        </div>
+      )}
+
+      {mode && showModeSelect && (
+        <div
+          style={{
+            marginTop: 15,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 8,
+          }}
+        >
+          <p style={{ marginBottom: 2 }}>Bounty title:</p>
+
+          <input
+            type="text"
+            value={matchTitle}
+            onChange={(e) => setMatchTitle(e.target.value)}
+            placeholder="What is this bounty?"
+            maxLength={100}
+            style={{
+              padding: "10px",
+              borderRadius: 8,
+              border: "1px solid #ccc",
+              width: 200,
+              textAlign: "center",
+            }}
+          />
+
+          <p style={{ marginBottom: 2 }}>Input bet:</p>
+
+          <input
+            type="number"
+            value={betAmount}
+            onChange={(e) => setBetAmount(Number(e.target.value))}
+            placeholder="Enter bounty bet"
+            style={{
+              padding: "10px",
+              borderRadius: 8,
+              border: "1px solid #ccc",
+              width: 200,
+              textAlign: "center",
+            }}
+          />
+        </div>
+      )}
+
+      {currentMatch && !showModeSelect && (
+        <p style={{ marginTop: 10 }}>
+          Match ID: <b>{currentMatch.id}</b>
+        </p>
+      )}
+
+      {!currentMatch && !pendingJoin && !mode && (
+        <div style={{ marginTop: 10 }}>
+          <input
+            value={matchId}
+            onChange={(e) => setMatchId(e.target.value)}
+            placeholder="Enter Match ID"
+            style={{
+              padding: "10px",
+              borderRadius: 8,
+              border: "1px solid #ccc",
+            }}
+          />
+
+          <button
+            style={{ ...btn, background: "purple", color: "white" }}
+            onClick={lookupMatch}
+          >
+            Join Match
+          </button>
+        </div>
+      )}
+
+      {shouldShowJoinPrompt && pendingJoin && (
+        <JoinMatchPrompt
+          previewCost={previewCost}
+          previewCurrent={previewCurrent}
+          previewAfter={previewAfter}
+          onCancel={() => setPendingJoin(null)}
+          pendingJoin={pendingJoin}
+          sessionUserId={sessionUserId}
+          onJoined={onJoined}
+          showPopup={showPopup}
+          loadUser={loadUser}
+        />
+      )}
+      {currentMatch?.mode === "pvp" &&
+        (
+          currentMatch.creator_id === sessionUserId ||
+          currentMatch.opponent_id === sessionUserId
+        ) && (
+          <button
+            style={{ ...btn, background: "green", color: "white" }}
+            onClick={() => finishMatch(sessionUserId, "🏆 Match finished!")}
+          >
+            🏆 Declare Winner (Me)
+          </button>
+        )}
+
+      {currentMatch?.mode === "solo" &&
+        currentMatch.creator_id === sessionUserId && (
+          <>
+            <button
+              style={{ ...btn, background: "green", color: "white" }}
+              onClick={() =>
+                finishMatch(
+                  currentMatch.creator_id ?? null,
+                  "🏆 You WON"
+                )
+              }
+            >
+              🏆 Win
+            </button>
+
+            <button
+              style={{ ...btn, background: "red", color: "white" }}
+              onClick={() => finishMatch(null, "💀 You LOST")}
+            >
+              💀 Lose
+            </button>
+          </>
+        )}
+    </>
+  );
+}
