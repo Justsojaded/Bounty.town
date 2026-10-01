@@ -311,7 +311,7 @@ async function handleChatMessage(notification: any) {
   if (text.toLowerCase() === "!help") {
     await sendChatMessage(
       event.broadcaster_user_id,
-      "🏹 bounty.town: https://bounty.town"
+      "🏹 bounty.town vote, collect bounties!"
     );
     return;
   }
