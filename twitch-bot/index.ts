@@ -308,6 +308,14 @@ async function handleChatMessage(notification: any) {
     return;
   }
 
+  if (text.toLowerCase() === "!help") {
+    await sendChatMessage(
+      event.broadcaster_user_id,
+      "🏹 bounty.town: https://bounty.town"
+    );
+    return;
+  }
+
   if (text.toLowerCase() === "!bounty") {
     const bountyUser = await getBountyUserByTwitchId(
       event.chatter_user_id
