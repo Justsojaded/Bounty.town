@@ -6,31 +6,39 @@ export async function GET(req: Request) {
 
   if (!match_id) {
     return Response.json({
-      a: 0, b: 0,
-      bountyA: 0, bountyB: 0,
-      twitchA: 0, twitchB: 0,
+      a: 0,
+      b: 0,
+      bountyA: 0,
+      bountyB: 0,
+      twitchA: 0,
+      twitchB: 0,
+      freeA: 0,
+      freeB: 0,
       bountyVoters: 0,
       freeVoters: 0,
     });
   }
 
-  const [{ data: bountyVotes }, { data: twitchVotes }] = await Promise.all([
-    supabaseAdmin
-      .from("match_votes")
-      .select("vote" )
-      .eq("match_id", String(match_id)),
-    supabaseAdmin
-      .from("twitch_votes")
-      .select("vote, bet_amount")
-      .eq("match_id", String(match_id)),
-  ]);
+  const [{ data: bountyVotes }, { data: twitchVotes }] =
+    await Promise.all([
+      supabaseAdmin
+        .from("match_votes")
+        .select("vote")
+        .eq("match_id", String(match_id)),
+
+      supabaseAdmin
+        .from("twitch_votes")
+        .select("vote, bet_amount")
+        .eq("match_id", String(match_id)),
+    ]);
 
   let bountyA = 0;
   let bountyB = 0;
   let twitchA = 0;
   let twitchB = 0;
   let freeVoters = 0;
-  let paidTwitchVoters = 0;
+  let paidTwitchA = 0;
+  let paidTwitchB = 0;
 
   for (const v of bountyVotes || []) {
     if (v.vote === "A") bountyA++;
@@ -42,7 +50,8 @@ export async function GET(req: Request) {
     if (v.vote === "B") twitchB++;
 
     if (Number(v.bet_amount ?? 0) > 0) {
-      paidTwitchVoters++;
+      if (v.vote === "A") paidTwitchA++;
+      if (v.vote === "B") paidTwitchB++;
     } else {
       freeVoters++;
     }
@@ -55,8 +64,15 @@ export async function GET(req: Request) {
     bountyB,
     twitchA,
     twitchB,
+    freeA: twitchA - paidTwitchA,
+    freeB: twitchB - paidTwitchB,
+
     // Website votes use bounty, and paid Twitch votes also use bounty.
-    bountyVoters: (bountyVotes || []).length + paidTwitchVoters,
+    bountyVoters:
+      (bountyVotes || []).length +
+      paidTwitchA +
+      paidTwitchB,
+
     freeVoters,
   });
 }
