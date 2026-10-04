@@ -75,14 +75,33 @@ export default function VoteBar({
     const freeTotal = freeA + freeB;
     if (isSolo) {
         const totalSoloVotes = voteCount.a + voteCount.b;
+
+        const bountyA = Math.max(voteCount.a - freeA, 0);
+        const bountyB = Math.max(voteCount.b - freeB, 0);
+        const bountyTotal = bountyA + bountyB;
+
         const soloWinPercent =
             totalSoloVotes === 0
                 ? 50
                 : (voteCount.b / totalSoloVotes) * 100;
 
+        const bountyWinPercent =
+            bountyTotal === 0
+                ? 50
+                : (bountyB / bountyTotal) * 100;
+
         const customSlider = Boolean(sliderImageUrl);
-        const loseWidth = `${(100 - soloWinPercent) / 2}%`;
-        const winWidth = `${soloWinPercent / 2}%`;
+
+        const loseWidth =
+            bountyTotal > 0
+                ? `${(100 - bountyWinPercent) / 2}%`
+                : "0%";
+
+        const winWidth =
+            bountyTotal > 0
+                ? `${bountyWinPercent / 2}%`
+                : "0%";
+
         const freeWinPercent =
             freeTotal === 0
                 ? 50
@@ -253,9 +272,17 @@ export default function VoteBar({
     if (!isSolo) {
 
         const customSlider = Boolean(sliderImageUrl);
+        const bountyA = Math.max(sides.A.votes - freeA, 0);
+        const bountyB = Math.max(sides.B.votes - freeB, 0);
 
-        const creatorWidth = `${(sides.A.votes / totalVotes) * 50}%`;
-        const opponentWidth = `${(sides.B.votes / totalVotes) * 50}%`;
+        const bountyTotal = bountyA + bountyB;
+
+        const creatorWidth =
+            bountyTotal > 0 ? `${(bountyA / bountyTotal) * 50}%` : "0%";
+
+        const opponentWidth =
+            bountyTotal > 0 ? `${(bountyB / bountyTotal) * 50}%` : "0%";
+
         const freeVotePosition =
             freeTotal === 0
                 ? 50
