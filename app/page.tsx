@@ -198,13 +198,21 @@ export default function Home() {
     }, duration / steps);
   };
   const loadUser = async (userId: string) => {
+    // Make sure the bounty account exists
+    await fetch("/api/bounty", {
+      method: "POST",
+    });
+
+    // Then load the user's bounty data
     const res = await fetch(`/api/bounty?user_id=${userId}`);
     const result = await res.json();
 
     if (result.data) {
       setBounty(result.data.bounty ?? 0);
+
       const newPoints = Number(result.data.points ?? 0);
       setPoints(newPoints);
+
       animateXP(newPoints);
     }
   };
