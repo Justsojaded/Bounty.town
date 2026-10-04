@@ -72,7 +72,7 @@ export default function VoteBar({
         opacity: voteLocked ? 0.65 : 1,
         transition: "opacity 0.2s ease, background 0.2s ease",
     });
-
+    const freeTotal = freeA + freeB;
     if (isSolo) {
         const totalSoloVotes = voteCount.a + voteCount.b;
         const soloWinPercent =
@@ -83,7 +83,10 @@ export default function VoteBar({
         const customSlider = Boolean(sliderImageUrl);
         const loseWidth = `${(100 - soloWinPercent) / 2}%`;
         const winWidth = `${soloWinPercent / 2}%`;
-
+        const freeWinPercent =
+            freeTotal === 0
+                ? 50
+                : (freeB / freeTotal) * 100;
         return (
             <div
                 style={{
@@ -113,7 +116,6 @@ export default function VoteBar({
                         height: 10,
                         background: "#222",
                         borderRadius: 5,
-                        overflow: "hidden",
                         margin: "8px auto",
                     }}
                 >
@@ -176,7 +178,22 @@ export default function VoteBar({
                             />
                         </>
                     )}
-
+                    {/* 💜 FREE VOTER INDICATORS */}
+                    <div
+                        style={{
+                            position: "absolute",
+                            left: `${freeWinPercent}%`,
+                            top: -4,
+                            transform: "translateX(-50%)",
+                            width: 4,
+                            height: 18,
+                            background: "#a855f7",
+                            borderRadius: 4,
+                            transition:
+                                "left 0.4s cubic-bezier(0.4, 0.2, 0.2, 1)",
+                            zIndex: 10,
+                        }}
+                    />
                     <div
                         style={{
                             position: "absolute",
@@ -233,219 +250,207 @@ export default function VoteBar({
             </div>
         );
     }
+    if (!isSolo) {
 
-    const customSlider = Boolean(sliderImageUrl);
+        const customSlider = Boolean(sliderImageUrl);
 
-    const creatorWidth = `${(sides.A.votes / totalVotes) * 50}%`;
-    const opponentWidth = `${(sides.B.votes / totalVotes) * 50}%`;
-    const freeTotal = freeA + freeB;
-
-    const freeCreatorWidth =
-        freeTotal > 0 ? `${(freeA / freeTotal) * 50}%` : "0%";
-
-    const freeOpponentWidth =
-        freeTotal > 0 ? `${(freeB / freeTotal) * 50}%` : "0%";
-    return (
-        <div
-            style={{
-                textAlign: "center",
-                marginTop: 20,
-                marginBottom: 10,
-            }}
-        >
-            {displayedVote ? (
-                <p
-                    style={{
-                        fontSize: 12,
-                        color: "#aaa",
-                    }}
-                >
-                    You voted: {sideNames[displayedVote]}
-                </p>
-            ) : !canVote ? (
-                <p
-                    style={{
-                        fontSize: 12,
-                        color: "#ff6666",
-                    }}
-                >
-                    Unable to vote
-                </p>
-            ) : null}
-            {showVoteButtons && canVote && !voteLocked && (
-                <button
-                    onClick={() => vote?.("A")}
-                    style={voteButtonStyle(sideColors.A)}
-                >
-                    {sideNames.A}
-                </button>
-            )}
-            {showVoteButtons && canVote && !voteLocked && (
-                <button
-                    onClick={() => vote?.("B")}
-                    style={voteButtonStyle(sideColors.B)}
-                >
-                    {sideNames.B}
-                </button>
-            )}
+        const creatorWidth = `${(sides.A.votes / totalVotes) * 50}%`;
+        const opponentWidth = `${(sides.B.votes / totalVotes) * 50}%`;
+        const freeVotePosition =
+            freeTotal === 0
+                ? 50
+                : 50 + ((freeB - freeA) / freeTotal) * 50;
+        return (
             <div
                 style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    width: 300,
-                    margin: "2px auto 8px auto",
-                    color: "#ccc",
-                    fontSize: 13,
+                    textAlign: "center",
+                    marginTop: 20,
+                    marginBottom: 10,
                 }}
             >
-                <span>
-                    <span
+                {displayedVote ? (
+                    <p
                         style={{
-                            color: sideColors.A,
+                            fontSize: 12,
+                            color: "#aaa",
                         }}
                     >
-                        {sideNames.A} — {sides.A.votes}
-                    </span>
-                </span>
-                <span>
-                    {currentMatch.opponent_id ? (
-                        <span
-                            style={{
-                                color: sideColors.B,
-                            }}
-                        >
-                            {sideNames.B} — {sides.B.votes}
-                        </span>
-                    ) : (
-                        "⏳ Waiting for opponent..."
-                    )}
-                </span>
-            </div>
-            {(totalVotes > 0 || freeTotal > 0) && (
+                        You voted: {sideNames[displayedVote]}
+                    </p>
+                ) : !canVote ? (
+                    <p
+                        style={{
+                            fontSize: 12,
+                            color: "#ff6666",
+                        }}
+                    >
+                        Unable to vote
+                    </p>
+                ) : null}
+                {showVoteButtons && canVote && !voteLocked && (
+                    <button
+                        onClick={() => vote?.("A")}
+                        style={voteButtonStyle(sideColors.A)}
+                    >
+                        {sideNames.A}
+                    </button>
+                )}
+                {showVoteButtons && canVote && !voteLocked && (
+                    <button
+                        onClick={() => vote?.("B")}
+                        style={voteButtonStyle(sideColors.B)}
+                    >
+                        {sideNames.B}
+                    </button>
+                )}
                 <div
                     style={{
-                        position: "relative",
+                        display: "flex",
+                        justifyContent: "space-between",
                         width: 300,
-                        height: 10,
-                        background: "#222",
-                        borderRadius: 5,
-                        overflow: "hidden",
-                        margin: "8px auto",
+                        margin: "2px auto 8px auto",
+                        color: "#ccc",
+                        fontSize: 13,
                     }}
                 >
-                    <div style={{ color: "#a855f7", fontSize: 12 }}>
-                        FREE DEBUG: A={freeA} B={freeB} Total={freeTotal}
-                    </div>
-                    
-                    {customSlider ? (
-                        <>
-                            <div
+                    <span>
+                        <span
+                            style={{
+                                color: sideColors.A,
+                            }}
+                        >
+                            {sideNames.A} — {sides.A.votes}
+                        </span>
+                    </span>
+                    <span>
+                        {currentMatch.opponent_id ? (
+                            <span
                                 style={{
-                                    position: "absolute",
-                                    right: "50%",
-                                    top: 0,
-                                    width: creatorWidth,
-                                    height: 10,
-                                    overflow: "hidden",
-                                    backgroundImage: `url(${sliderImageUrl})`,
-                                    backgroundRepeat: "no-repeat",
-                                    backgroundSize: "auto",
-                                    backgroundPosition: "right center",
+                                    color: sideColors.B,
                                 }}
-                            />
-
-                            <div
-                                style={{
-                                    position: "absolute",
-                                    left: "50%",
-                                    top: 0,
-                                    width: opponentWidth,
-                                    height: 10,
-                                    overflow: "hidden",
-                                    backgroundImage: `url(${sliderImageUrl})`,
-                                    backgroundRepeat: "no-repeat",
-                                    backgroundSize: "auto",
-                                    backgroundPosition: "left center",
-                                }}
-                            />
-                        </>
-                    ) : (
-                        <>
-                            <div
-                                style={{
-                                    position: "absolute",
-                                    right: "50%",
-                                    top: 0,
-                                    height: "100%",
-                                    width: creatorWidth,
-                                    background: "blue",
-                                    transition: "width 0.4s ease",
-                                }}
-                            />
-
-                            <div
-                                style={{
-                                    position: "absolute",
-                                    left: "50%",
-                                    top: 0,
-                                    height: "100%",
-                                    width: opponentWidth,
-                                    background: "red",
-                                    transition: "width 0.4s ease",
-                                }}
-                            />
-                        </>
-                    )}
-
-                    {/* 💜 FREE VOTER INDICATORS */}
-                    <div
-                        style={{
-                            position: "absolute",
-                            right: "50%",
-                            bottom: 0,
-                            width: freeCreatorWidth,
-                            height: 4,
-                            background: "#a855f7",
-                            borderRadius: "4px 0 0 4px",
-                            transition: "width 0.4s ease",
-                            zIndex: 10,
-                        }}
-                    />
-
-                    <div
-                        style={{
-                            position: "absolute",
-                            left: "50%",
-                            bottom: 0,
-                            width: freeOpponentWidth,
-                            height: 4,
-                            background: "#a855f7",
-                            borderRadius: "0 4px 4px 0",
-                            transition: "width 0.4s ease",
-                            zIndex: 10,
-                        }}
-                    />
-
-                    <div
-                        style={{
-                            position: "absolute",
-                            left: `${50 +
-                                ((sides.A.votes - sides.B.votes) /
-                                    totalVotes) *
-                                50
-                                }%`,
-                            top: -4,
-                            transform: "translateX(-50%)",
-                            width: 8,
-                            height: 18,
-                            background: "white",
-                            borderRadius: 4,
-                            transition:
-                                "left 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
-                        }}
-                    />
+                            >
+                                {sideNames.B} — {sides.B.votes}
+                            </span>
+                        ) : (
+                            "⏳ Waiting for opponent..."
+                        )}
+                    </span>
                 </div>
-            )}
-        </div>
-    );
+                {(totalVotes > 0 || freeTotal > 0) && (
+                    <div
+                        style={{
+                            position: "relative",
+                            width: 300,
+                            height: 10,
+                            background: "#222",
+                            borderRadius: 5,
+                            overflow: "hidden",
+                            margin: "8px auto",
+                        }}
+                    >
+
+                        {customSlider ? (
+                            <>
+                                <div
+                                    style={{
+                                        position: "absolute",
+                                        right: "50%",
+                                        top: 0,
+                                        width: creatorWidth,
+                                        height: 10,
+                                        overflow: "hidden",
+                                        backgroundImage: `url(${sliderImageUrl})`,
+                                        backgroundRepeat: "no-repeat",
+                                        backgroundSize: "auto",
+                                        backgroundPosition: "right center",
+                                    }}
+                                />
+
+                                <div
+                                    style={{
+                                        position: "absolute",
+                                        left: "50%",
+                                        top: 0,
+                                        width: opponentWidth,
+                                        height: 10,
+                                        overflow: "hidden",
+                                        backgroundImage: `url(${sliderImageUrl})`,
+                                        backgroundRepeat: "no-repeat",
+                                        backgroundSize: "auto",
+                                        backgroundPosition: "left center",
+                                    }}
+                                />
+                            </>
+                        ) : (
+                            <>
+                                <div
+                                    style={{
+                                        position: "absolute",
+                                        right: "50%",
+                                        top: 0,
+                                        height: "100%",
+                                        width: creatorWidth,
+                                        background: "blue",
+                                        transition: "width 0.4s ease",
+                                    }}
+                                />
+
+                                <div
+                                    style={{
+                                        position: "absolute",
+                                        left: "50%",
+                                        top: 0,
+                                        height: "100%",
+                                        width: opponentWidth,
+                                        background: "red",
+                                        transition: "width 0.4s ease",
+                                    }}
+                                />
+                            </>
+                        )}
+
+                        {/* 💜 FREE TWITCH VOTE POSITION */}
+                        {freeTotal > 0 && (
+                            <div
+                                style={{
+                                    position: "absolute",
+                                    left: `${freeVotePosition}%`,
+                                    top: -4,
+                                    transform: "translateX(-50%)",
+                                    width: 4,
+                                    height: 18,
+                                    background: "#a855f7",
+                                    borderRadius: 4,
+                                    transition:
+                                        "left 0.4s cubic-bezier(0.4, 0.2, 0.2, 1)",
+                                    zIndex: 10,
+                                }}
+                            />
+                        )}
+
+                        {/* 🤍 ALL VOTES POSITION */}
+                        <div
+                            style={{
+                                position: "absolute",
+                                left: `${50 +
+                                    ((sides.B.votes - sides.A.votes) /
+                                        totalVotes) *
+                                    50
+                                    }%`,
+                                top: -4,
+                                transform: "translateX(-50%)",
+                                width: 8,
+                                height: 18,
+                                background: "white",
+                                borderRadius: 4,
+                                transition:
+                                    "left 0.4s cubic-bezier(0.4, 0.2, 0.2, 1)",
+                            }}
+                        />
+                    </div>
+                )}
+            </div>
+
+        );
+    }
 }

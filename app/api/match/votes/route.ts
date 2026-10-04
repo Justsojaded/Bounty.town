@@ -37,6 +37,8 @@ export async function GET(req: Request) {
   let twitchA = 0;
   let twitchB = 0;
   let freeVoters = 0;
+  let freeA = 0;
+  let freeB = 0;
   let paidTwitchA = 0;
   let paidTwitchB = 0;
 
@@ -53,6 +55,8 @@ export async function GET(req: Request) {
       if (v.vote === "A") paidTwitchA++;
       if (v.vote === "B") paidTwitchB++;
     } else {
+      if (v.vote === "A") freeA++;
+      if (v.vote === "B") freeB++;
       freeVoters++;
     }
   }
@@ -64,15 +68,14 @@ export async function GET(req: Request) {
     bountyB,
     twitchA,
     twitchB,
-    freeA: twitchA - paidTwitchA,
-    freeB: twitchB - paidTwitchB,
-
-    // Website votes use bounty, and paid Twitch votes also use bounty.
+    freeA,
+    freeB,
     bountyVoters:
       (bountyVotes || []).length +
       paidTwitchA +
       paidTwitchB,
-
     freeVoters,
+
+    DEBUG_TWITCH_ROWS: twitchVotes,
   });
 }

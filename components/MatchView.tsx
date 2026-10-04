@@ -240,9 +240,6 @@ export default function MatchView({
           <span>💰 Bounty voters: <b>{voterCounts.bounty}</b></span>
         </div>
       )}
-      <div style={{ color: "orange", fontSize: 12 }}>
-        MATCHVIEW UPDATED
-      </div>
       {canViewVotes && (
         <>
           <div

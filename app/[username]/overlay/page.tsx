@@ -12,6 +12,7 @@ export default function UserOverlay({
     const [match, setMatch] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [voteCount, setVoteCount] = useState({ a: 0, b: 0 });
+    const [freeVotes, setFreeVotes] = useState({ a: 0, b: 0 });
     const [winnerMessage, setWinnerMessage] = useState<string | null>(null);
     const finishedMatchRef = useRef<string | null>(null);
     useEffect(() => {
@@ -145,6 +146,11 @@ export default function UserOverlay({
             setVoteCount({
                 a: json.a ?? 0,
                 b: json.b ?? 0,
+            });
+
+            setFreeVotes({
+                a: json.freeA ?? 0,
+                b: json.freeB ?? 0,
             });
         };
 
@@ -289,8 +295,8 @@ export default function UserOverlay({
                             pendingVote={null}
                             canVote={true}
                             showVoteButtons={false}
-                            freeA={0}
-                            freeB={0}
+                            freeA={freeVotes.a}
+                            freeB={freeVotes.b}
                         />
                     </>
                 )}
