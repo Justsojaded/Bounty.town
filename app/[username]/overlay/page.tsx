@@ -289,6 +289,8 @@ export default function UserOverlay({
                             pendingVote={null}
                             canVote={true}
                             showVoteButtons={false}
+                            freeA={0}
+                            freeB={0}
                         />
                     </>
                 )}
