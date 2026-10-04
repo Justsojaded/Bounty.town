@@ -53,18 +53,31 @@ async function getTwitchConnection(twitchId: string) {
 }
 
 async function getBountyUserByTwitchId(twitchId: string) {
-  const { data, error } = await supabase
+  const { data: linkedUser, error: linkedError } = await supabase
     .from("bounties")
     .select("user_id, twitch_id, bounty")
     .eq("twitch_id", twitchId)
     .maybeSingle();
 
-  if (error) {
-    console.error("Failed to find bounty user by Twitch ID:", error);
+  if (linkedError) {
+    console.error("Failed to find bounty user by Twitch ID:", linkedError);
     return null;
   }
 
-  return data;
+  if (linkedUser) return linkedUser;
+
+  const { data: loggedInUser, error: loggedInError } = await supabase
+    .from("bounties")
+    .select("user_id, twitch_id, bounty")
+    .eq("user_id", twitchId)
+    .maybeSingle();
+
+  if (loggedInError) {
+    console.error("Failed to find logged-in bounty user by Twitch ID:", loggedInError);
+    return null;
+  }
+
+  return loggedInUser;
 }
 
 async function getActiveMatchForChannel(broadcasterId: string) {
