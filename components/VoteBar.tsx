@@ -36,6 +36,8 @@ type VoteBarProps = {
     showVoteButtons?: boolean;
     isCoolingDown?: boolean;
     sliderImageUrl?: string;
+    freeA: number;
+    freeB: number;
 };
 
 export default function VoteBar({
@@ -52,6 +54,8 @@ export default function VoteBar({
     showVoteButtons = true,
     isCoolingDown = false,
     sliderImageUrl,
+    freeA,
+    freeB,
 }: VoteBarProps) {
     const vote = useVote();
     const displayedVote = isCoolingDown ? myVote : myVote || pendingVote;
@@ -234,7 +238,13 @@ export default function VoteBar({
 
     const creatorWidth = `${(sides.A.votes / totalVotes) * 50}%`;
     const opponentWidth = `${(sides.B.votes / totalVotes) * 50}%`;
+    const freeTotal = freeA + freeB;
 
+    const freeCreatorWidth =
+        freeTotal > 0 ? `${(freeA / freeTotal) * 50}%` : "0%";
+
+    const freeOpponentWidth =
+        freeTotal > 0 ? `${(freeB / freeTotal) * 50}%` : "0%";
     return (
         <div
             style={{
@@ -297,7 +307,7 @@ export default function VoteBar({
                         {sideNames.A} — {sides.A.votes}
                     </span>
                 </span>
-                                <span>
+                <span>
                     {currentMatch.opponent_id ? (
                         <span
                             style={{
@@ -311,8 +321,7 @@ export default function VoteBar({
                     )}
                 </span>
             </div>
-
-            {totalVotes > 0 && (
+            {(totalVotes > 0 || freeTotal > 0) && (
                 <div
                     style={{
                         position: "relative",
@@ -324,6 +333,10 @@ export default function VoteBar({
                         margin: "8px auto",
                     }}
                 >
+                    <div style={{ color: "#a855f7", fontSize: 12 }}>
+                        FREE DEBUG: A={freeA} B={freeB} Total={freeTotal}
+                    </div>
+                    
                     {customSlider ? (
                         <>
                             <div
@@ -383,6 +396,35 @@ export default function VoteBar({
                             />
                         </>
                     )}
+
+                    {/* 💜 FREE VOTER INDICATORS */}
+                    <div
+                        style={{
+                            position: "absolute",
+                            right: "50%",
+                            bottom: 0,
+                            width: freeCreatorWidth,
+                            height: 4,
+                            background: "#a855f7",
+                            borderRadius: "4px 0 0 4px",
+                            transition: "width 0.4s ease",
+                            zIndex: 10,
+                        }}
+                    />
+
+                    <div
+                        style={{
+                            position: "absolute",
+                            left: "50%",
+                            bottom: 0,
+                            width: freeOpponentWidth,
+                            height: 4,
+                            background: "#a855f7",
+                            borderRadius: "0 4px 4px 0",
+                            transition: "width 0.4s ease",
+                            zIndex: 10,
+                        }}
+                    />
 
                     <div
                         style={{

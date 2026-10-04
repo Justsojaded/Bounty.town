@@ -80,26 +80,29 @@ export default function MatchView({
   const [voterCounts, setVoterCounts] = useState({
     bounty: 0,
     free: 0,
+    freeA: 0,
+    freeB: 0,
   });
 
   useEffect(() => {
-    if (!currentMatch?.id) {
-      setVoterCounts({ bounty: 0, free: 0 });
-      return;
-    }
+    if (!currentMatch?.id) return;
 
     const loadVoterCounts = async () => {
       const res = await fetch(`/api/match/votes?match_id=${currentMatch.id}`);
       if (!res.ok) return;
 
       const data = await res.json();
+
       setVoterCounts({
         bounty: data.bountyVoters ?? 0,
         free: data.freeVoters ?? 0,
+        freeA: data.freeA ?? 0,
+        freeB: data.freeB ?? 0,
       });
     };
 
     loadVoterCounts();
+
     const interval = setInterval(loadVoterCounts, 1000);
 
     return () => clearInterval(interval);
@@ -237,7 +240,9 @@ export default function MatchView({
           <span>💰 Bounty voters: <b>{voterCounts.bounty}</b></span>
         </div>
       )}
-
+      <div style={{ color: "orange", fontSize: 12 }}>
+        MATCHVIEW UPDATED
+      </div>
       {canViewVotes && (
         <>
           <div
@@ -271,6 +276,8 @@ export default function MatchView({
             pendingVote={pendingVote}
             canVote={canVote}
             isCoolingDown={isCoolingDown}
+            freeA={voterCounts.freeA}
+            freeB={voterCounts.freeB}
           />
         </>
       )}
