@@ -213,20 +213,6 @@ export default function VoteBar({
                             zIndex: 10,
                         }}
                     />
-                    <div
-                        style={{
-                            position: "absolute",
-                            left: `${soloWinPercent}%`,
-                            top: -4,
-                            transform: "translateX(-50%)",
-                            width: 8,
-                            height: 18,
-                            background: "white",
-                            borderRadius: 4,
-                            transition:
-                                "left 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
-                        }}
-                    />
                 </div>
 
                 {displayedVote ? (
@@ -454,26 +440,6 @@ export default function VoteBar({
                                 }}
                             />
                         )}
-
-                        {/* 🤍 ALL VOTES POSITION */}
-                        <div
-                            style={{
-                                position: "absolute",
-                                left: `${50 +
-                                    ((sides.B.votes - sides.A.votes) /
-                                        totalVotes) *
-                                    50
-                                    }%`,
-                                top: -4,
-                                transform: "translateX(-50%)",
-                                width: 8,
-                                height: 18,
-                                background: "white",
-                                borderRadius: 4,
-                                transition:
-                                    "left 0.4s cubic-bezier(0.4, 0.2, 0.2, 1)",
-                            }}
-                        />
                     </div>
                 )}
             </div>
