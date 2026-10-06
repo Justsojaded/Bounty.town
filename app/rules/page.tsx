@@ -20,54 +20,75 @@ export default function RulesPage() {
                 }}
             >
                 <h1>How Bounty Works</h1>
-                <p
-                    style={{
-                        marginBottom: "20px",
-                    }}
-                ></p>
-                ```
-                <h2>Solo</h2>
+
+                <p style={{ marginBottom: "20px" }}></p>
+                <h2 style={{ color: "#5544ef" }}>
+                    Twitch Data & Privacy
+                </h2>
+                <p style={{ marginBottom: "30px" }}>
+                    When you connect your Twitch account, Bounty.town stores your Twitch username and Twitch user ID so we can identify your account and keep your Bounty.town profile connected to Twitch.
+
+                    If you enable Twitch chat features, Bounty.town also stores the Twitch authorization tokens required to provide those features. These tokens are used to communicate with Twitch on your behalf and are revoked and deleted when you disconnect Twitch.
+
+                    Bounty.town does not store your Twitch password.
+
+                </p>
+
+                <h2 style={{ color: "#3b82f6" }}>Solo</h2>
                 <p style={{ marginBottom: "30px" }}>
                     The creator doesn't pay to enter. Viewers can vote for A or B.
 
-                    Paid votes add bounty to the pool. If the prediction is correct, 90% goes to the correct voters and 10% goes to the creator.
+                    Paid votes add bounty to the pool. If the prediction is correct,
+                    90% goes to the correct voters and 10% goes to the creator.
 
-                    If 90% or more of bounty-paying voters are wrong, their bounty is refunded.
+                    If 90% or more of bounty-paying voters are wrong, their bounty
+                    is refunded.
 
-                    If nobody gets it right and the refund rule isn't triggered, the creator gets the whole pool.
+                    If nobody gets it right and the refund rule isn't triggered,
+                    the creator gets the whole pool.
 
                     The audience risks bounty. The creator doesn't.
                 </p>
 
-                <h2>PvP</h2>
+                <h2 style={{ color: "#3b82f6" }}>PvP</h2>
                 <p style={{ marginBottom: "30px" }}>
-                    Both players pay the entry bounty, and viewer votes add more bounty to the pool.
+                    Both players pay the entry bounty, and viewer votes add more
+                    bounty to the pool.
 
-                    If the match pays out, 10% goes to the winner and 90% goes to the correct bounty-paying voters. The loser doesn't receive a payout.
+                    If the match pays out, 10% goes to the winner and 90% goes to
+                    the correct bounty-paying voters. The loser doesn't receive a
+                    payout.
 
-                    If 10% or fewer bounty-paying voters predict the winner correctly, the match is refunded. Both players get their entry bounty back, and paid voters get their bounty back.
+                    If 10% or fewer bounty-paying voters predict the winner
+                    correctly, the match is refunded. Both players get their entry
+                    bounty back, and paid voters get their bounty back.
 
                     If nobody pays to vote, the winner gets the whole pool.
 
                     More paid votes = a bigger potential reward.
-
                 </p>
-                <h2>Voting</h2>
-                <p style={{ marginBottom: "30px" }}>
-                    You can vote through bounty.town or, if enabled, through the bounty.town Twitch bot.
+
+                <h2 style={{ color: "#3b82f6" }}>Voting</h2>
+                <p style={{ marginBottom: "80px" }}>
+                    You can vote through bounty.town or, if enabled, through the
+                    bounty.town Twitch bot.
 
                     Once you vote, your prediction is locked and can't be changed.
 
-                    Free votes can participate, but only bounty-paying votes count toward the refund rules.
+                    Free votes can participate, but only bounty-paying votes count
+                    toward the refund rules.
                 </p>
-                <h2>🔒 Your Vote Is Locked</h2>
-                <p style={{ marginBottom: "30px" }}>
-                    Once you vote, your prediction is locked for that match. You can't change your vote later.
 
-                    You can vote through bounty.town or through supported Twitch chat voting, and your prediction remains locked either way.
-                </p>
-                <h2>💰 More Votes = Bigger Bounty</h2>
+                <h2 style={{ color: "#3b82f6" }}>🔒 Your Vote Is Locked</h2>
                 <p style={{ marginBottom: "30px" }}>
+                    Once you vote, your prediction is locked for that match. You
+                    can't change your vote later.
+
+                    You can vote through bounty.town or through supported Twitch
+                    chat voting, and your prediction remains locked either way.
+                </p>
+                <h2 style={{ color: "#3b82f6" }}>💰 More Votes = Bigger Bounty</h2>
+                <p style={{ marginBottom: "75px" }}>
                     Every paid vote can grow the bounty pool.
 
                     So whether you're playing, watching, or voting from Twitch...
